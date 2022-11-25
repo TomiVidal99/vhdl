@@ -1,0 +1,1 @@
+-- Se implementa un flip flop de tipo RS
