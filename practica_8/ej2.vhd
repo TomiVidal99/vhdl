@@ -12,7 +12,6 @@ end entity;
 architecture A1 of ej2 is
 begin
 
-  
   -- incisio 1
   --process(BUTTON, SW) is
   --begin
@@ -44,7 +43,7 @@ begin
         LEDG(5) <= '1';
       end if;
     end if;
-  
+
   end process;
 
 end A1;

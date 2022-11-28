@@ -25,4 +25,3 @@ Co 	<= (D1 and D2) or (D1 and Ci) or (D2 and Ci);
 
 
 end Arq;
-
