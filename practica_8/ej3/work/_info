@@ -1,0 +1,91 @@
+m255
+K3
+z0
+!s11e MIXED_VERSIONS
+13
+cModel Technology
+dC:\altera\13.1
+Eej3
+Z0 w1669389843
+Z1 DPx4 ieee 15 std_logic_arith 0 22 [G314=:2zXJ`VORJe1J@Z1
+Z2 DPx3 std 6 textio 0 22 zE1`LPoLg^DX3Oz^4Fj1K3
+Z3 DPx4 ieee 14 std_logic_1164 0 22 cVAk:aDinOX8^VGI1ekP<3
+!i122 2
+Z4 d/home/tomii/Documents/Quartus/practica_8/ej3
+Z5 8/home/tomii/Documents/Quartus/practica_8/ej3/ej3.vhd
+Z6 F/home/tomii/Documents/Quartus/practica_8/ej3/ej3.vhd
+l0
+L5 1
+VljUf?oOS@i<RdJ960[13E2
+!s100 57zbfhcCoU611D?AMJEMc0
+Z7 OV;C;2020.1;71
+32
+Z8 !s110 1669598086
+!i10b 1
+Z9 !s108 1669598086.000000
+Z10 !s90 -reportprogress|300|-work|work|-2002|-explicit|-stats=none|/home/tomii/Documents/Quartus/practica_8/ej3/ej3.vhd|
+Z11 !s107 /home/tomii/Documents/Quartus/practica_8/ej3/ej3.vhd|
+!i113 1
+Z12 o-work work -2002 -explicit
+Z13 tExplicit 1 CvgOpt 0
+Aa1
+R1
+R2
+R3
+DEx4 work 3 ej3 0 22 ljUf?oOS@i<RdJ960[13E2
+!i122 2
+l28
+L17 57
+V??4a5XV:nAJ:9?1ReBnhg2
+!s100 2H7JYih4_aTADlk^7Od=M0
+R7
+32
+R8
+!i10b 1
+R9
+R10
+R11
+!i113 1
+R12
+R13
+Emapeo7segments
+Z14 w1669304007
+R2
+R3
+!i122 3
+R4
+Z15 8/home/tomii/Documents/Quartus/practica_8/ej3/mapeo7segments.vhd
+Z16 F/home/tomii/Documents/Quartus/practica_8/ej3/mapeo7segments.vhd
+l0
+L6 1
+Vi6WnLUZaio]HSY7kXGVl:0
+!s100 QYYinf^gU^M`3z@MKLV_j3
+R7
+32
+R8
+!i10b 1
+R9
+Z17 !s90 -reportprogress|300|-work|work|-2002|-explicit|-stats=none|/home/tomii/Documents/Quartus/practica_8/ej3/mapeo7segments.vhd|
+Z18 !s107 /home/tomii/Documents/Quartus/practica_8/ej3/mapeo7segments.vhd|
+!i113 1
+R12
+R13
+Aa1
+R2
+R3
+Z19 DEx4 work 14 mapeo7segments 0 22 i6WnLUZaio]HSY7kXGVl:0
+!i122 3
+l15
+Z20 L14 33
+Z21 V:FZ2zaf6^L>[jZ@PEgmCb2
+Z22 !s100 CMG^;dXiRSm_DeOnK>i_A1
+R7
+32
+R8
+!i10b 1
+R9
+R17
+R18
+!i113 1
+R12
+R13

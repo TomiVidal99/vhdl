@@ -1,0 +1,48 @@
+m255
+K3
+z0
+!s11e MIXED_VERSIONS
+13
+cModel Technology
+d/home/tomii
+Etest1
+Z0 w1666443137
+Z1 DPx3 std 6 textio 0 22 zE1`LPoLg^DX3Oz^4Fj1K3
+Z2 DPx4 ieee 14 std_logic_1164 0 22 cVAk:aDinOX8^VGI1ekP<3
+!i122 0
+Z3 d/home/tomii/Documents/Quartus/test1
+Z4 8/home/tomii/Documents/Quartus/test1/test1.vhd
+Z5 F/home/tomii/Documents/Quartus/test1/test1.vhd
+l0
+L5 1
+VES:FKG:D1RV3Y3a5f;=671
+!s100 Lko_FJ>X6dBCzMZ4FzSFR2
+Z6 OV;C;2020.1;71
+32
+Z7 !s110 1669597880
+!i10b 1
+Z8 !s108 1669597880.000000
+Z9 !s90 -reportprogress|300|-work|work|-2002|-explicit|-stats=none|/home/tomii/Documents/Quartus/test1/test1.vhd|
+Z10 !s107 /home/tomii/Documents/Quartus/test1/test1.vhd|
+!i113 1
+Z11 o-work work -2002 -explicit
+Z12 tExplicit 1 CvgOpt 0
+Aa1
+R1
+R2
+DEx4 work 5 test1 0 22 ES:FKG:D1RV3Y3a5f;=671
+!i122 0
+l14
+L12 16
+V@dI5ET_DgT=P1`ESY=E2=2
+!s100 j:_IM::Ia_0FBzzmU=A8L0
+R6
+32
+R7
+!i10b 1
+R8
+R9
+R10
+!i113 1
+R11
+R12
