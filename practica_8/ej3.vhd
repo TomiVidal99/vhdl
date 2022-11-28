@@ -7,9 +7,9 @@ entity ej3 is
     -- tengo que usar un vector de 10 de longitud si o si?
     SW        : IN  std_logic_vector(9 downto 0);
     HEX0_D    : OUT std_logic_vector(6 downto 0);
-	 HEX1_D    : OUT std_logic_vector(6 downto 0);
-	 HEX2_D    : OUT std_logic_vector(6 downto 0);
-	 HEX3_D    : OUT std_logic_vector(6 downto 0)
+    HEX1_D    : OUT std_logic_vector(6 downto 0);
+    HEX2_D    : OUT std_logic_vector(6 downto 0);
+    HEX3_D    : OUT std_logic_vector(6 downto 0)
     --HEX0_DP   : OUT std_logic
   );
 end entity;
