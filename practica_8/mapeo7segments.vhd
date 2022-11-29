@@ -16,7 +16,7 @@ begin
 
   
   procesoPrincipal:
-  process(entrada) is
+  process(habilitado, entrada) is
   begin
     if (habilitado = '1') then
       case entrada is
