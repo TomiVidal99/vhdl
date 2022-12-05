@@ -1,7 +1,0 @@
-|test1
-A => temp_sum.IN0
-B => temp_sum.IN1
-clk => temp_sum.CLK
-output <= temp_sum.DB_MAX_OUTPUT_PORT_TYPE
-
-
