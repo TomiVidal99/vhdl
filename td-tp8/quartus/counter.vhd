@@ -8,8 +8,7 @@ ENTITY counter IS
   PORT (
     CLOCK_50 : IN STD_LOGIC; -- reloj interno de la FPGA de 50Mhz
     SW : IN STD_LOGIC_VECTOR(9 DOWNTO 0); -- SW(0) switch de pausa
-    BUTTON0 : IN STD_LOGIC; -- botón de inicio
-    BUTTON1 : IN STD_LOGIC; -- botón de reset
+    BUTTON0 : IN STD_LOGIC; -- botón de reset
     HEX0 : OUT STD_LOGIC_VECTOR(6 DOWNTO 0); -- display 1
     HEX1 : OUT STD_LOGIC_VECTOR(6 DOWNTO 0); -- display 2
     HEX2 : OUT STD_LOGIC_VECTOR(6 DOWNTO 0); -- display 3
@@ -24,72 +23,60 @@ ARCHITECTURE A1 OF counter IS
 
   COMPONENT decoder7segments IS
     PORT (
-      entrada : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
-      habilitado : IN STD_LOGIC;
-      decimal : IN STD_LOGIC;
-      salida : OUT STD_LOGIC_VECTOR(6 DOWNTO 0)
+      NUMBER : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
+      ENABLE : IN STD_LOGIC;
+      DECIMAL : IN STD_LOGIC;
+      OUTPUT : OUT STD_LOGIC_VECTOR(6 DOWNTO 0)
     );
   END COMPONENT;
 
   COMPONENT frequencyDivider IS
     PORT (
-      CLOCK : IN STD_LOGIC;
+      CLOCK_IN : IN STD_LOGIC;
       RESET : IN STD_LOGIC;
-      SALIDA : OUT STD_LOGIC
+      CLOCK_OUT : OUT STD_LOGIC
     );
   END COMPONENT;
 
   -- señales internas
   SIGNAL counter : STD_LOGIC_VECTOR(13 DOWNTO 0); -- cuenta el tiempo que transcurre
   SIGNAL clk : STD_LOGIC; -- señal de 0,01s = 100hz
-  SIGNAL canCount : STD_LOGIC; -- señal de control que permite habilitar la cuenta o no, para dar sentido de un comienzo y un fin
 
 BEGIN
 
-  -- RESETEO
-  PROCESS (BUTTON1, counter, canCount) IS
-  BEGIN
-
-    IF (BUTTON1 = '1') THEN
-      counter <= (OTHERS => '0');
-      canCount <= '0';
-    END IF;
-  END PROCESS;
-
-  -- START
-  PROCESS (clk, BUTTON0)
-  BEGIN
-
-    IF (rising_edge(clk) AND BUTTON0 = '1') THEN
-      canCount <= '1';
-      counter <= (OTHERS => '0');
-    END IF;
-
-  END PROCESS;
-
   -- Se suma 0,01 segundos a la cuenta hasta llegar a 99,99s
-  PROCESS (clk, canCount, counter, SW(0))
+  PROCESS (clk, counter, SW(0))
   BEGIN
 
-    IF (rising_edge(clk) AND SW(0) = '0' AND canCount = '1' AND counter < counterMaxCount) THEN
-      counter <= counter + '1';
+    IF (rising_edge(clk)) THEN
+      -- todos los eventos son síncronos con el reloj
+
+      -- Se reinicia el cronómetro, cuando se presiona el botón de RESET   
+      IF (BUTTON0 = '1') THEN
+        counter <= (OTHERS => '0');
+
+        -- Si en conteo no llego al fin y el usuario habilita el conteo, se suma 0,01 al cronómetro
+      ELSIF (SW(0) = '0' AND counter < counterMaxCount) THEN
+        counter <= counter + '1';
+      END IF;
+
     END IF;
 
   END PROCESS;
 
   -- primer display (muestra la unidad)
   d7s_0 : decoder7segments PORT MAP(
-    entrada => counter(3 DOWNTO 0),
-    habilitado => '1',
-    decimal => '1',
-    salida => HEX0
+    NUMBER => counter(3 DOWNTO 0),
+    ENABLE => '1',
+    DECIMAL => '1',
+    OUTPUT => HEX0
   );
 
   -- reloj de 100Hz
   clk100 : frequencyDivider PORT MAP(
-    CLOCK => CLOCK_50,
-    RESET => BUTTON1,
-    SALIDA => clk
+    CLOCK_IN => CLOCK_50,
+    RESET => BUTTON0,
+    CLOCK_OUT => clk
   );
 
 END A1;

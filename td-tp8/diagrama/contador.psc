@@ -1,4 +1,4 @@
-Proceso TiempoTranscurrido
+Proceso contador
 	
 	Definir INICIO, REINICIO, PAUSA Como Logico;
 	Definir TiempoTranscurrido Como Real;
