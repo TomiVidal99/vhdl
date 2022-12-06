@@ -8,42 +8,44 @@ ENTITY counter IS
   PORT (
     CLOCK_50 : IN STD_LOGIC; -- reloj interno de la FPGA de 50Mhz
     SW : IN STD_LOGIC_VECTOR(9 DOWNTO 0); -- SW(0) switch de pausa
-	 LEDG: OUT STD_LOGIC_VECTOR(9 downto 0);
-    BUTTON2 : IN STD_LOGIC; -- botón de reset
-    HEX0_D: OUT STD_LOGIC_VECTOR(6 DOWNTO 0); -- display 1
-    HEX1_D: OUT STD_LOGIC_VECTOR(6 DOWNTO 0); -- display 2
-    HEX2_D: OUT STD_LOGIC_VECTOR(6 DOWNTO 0); -- display 3
-    HEX3_D: OUT STD_LOGIC_VECTOR(6 DOWNTO 0); -- display 4
+    LEDG : OUT STD_LOGIC_VECTOR(9 DOWNTO 0); -- LEDs, se usan para debugear
+    HEX0_D : OUT STD_LOGIC_VECTOR(6 DOWNTO 0); -- display 1
+    HEX1_D : OUT STD_LOGIC_VECTOR(6 DOWNTO 0); -- display 2
+    HEX2_D : OUT STD_LOGIC_VECTOR(6 DOWNTO 0); -- display 3
+    HEX3_D : OUT STD_LOGIC_VECTOR(6 DOWNTO 0); -- display 4
     HEX2_DP : OUT STD_LOGIC -- punto decimal del 3er display
   );
 END ENTITY;
 
 ARCHITECTURE A1 OF counter IS
 
-  CONSTANT counterMaxCount : STD_LOGIC_VECTOR(13 DOWNTO 0) := "10011100001111";
   CONSTANT digitMaxCount : STD_LOGIC_VECTOR(3 DOWNTO 0) := "1001";
 
-  COMPONENT digitCounter is
+  -- Este componente se encarga de contar el digito de un display.
+  COMPONENT digitCounter IS
     GENERIC (
-        MAX_COUNT : STD_LOGIC_VECTOR(3 DOWNTO 0) := "1001"
+      MAX_COUNT : STD_LOGIC_VECTOR(3 DOWNTO 0) := "1001"
     );
     PORT (
-        clk : IN STD_LOGIC;
-		  reset    : IN STD_LOGIC;
-		  maxCount : OUT STD_LOGIC;
-        numberOUT : OUT STD_LOGIC_VECTOR(3 DOWNTO 0)
+      clk : IN STD_LOGIC;
+      reset : IN STD_LOGIC;
+      maxCount : OUT STD_LOGIC;
+      numberOUT : OUT STD_LOGIC_VECTOR(3 DOWNTO 0)
     );
-  end COMPONENT;
+  END COMPONENT;
 
+  -- Este componente se encarga de tomar un numero de binario de 4 bits 
+  -- y convertirlo a una señal de 7 bits para un display de 7 segmentos.
   COMPONENT decoder7segments IS
     PORT (
       NUMBER : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
       ENABLE : IN STD_LOGIC;
-      DECIMAL : IN STD_LOGIC;
       OUTPUT : OUT STD_LOGIC_VECTOR(6 DOWNTO 0)
     );
   END COMPONENT;
 
+  -- Este componente se encarga de tomar una señal de reloj y emitir
+  -- una nueva de menor frecuencia (en este caso 100Hz).
   COMPONENT frequencyDivider IS
     PORT (
       CLOCK_IN : IN STD_LOGIC;
@@ -52,112 +54,89 @@ ARCHITECTURE A1 OF counter IS
     );
   END COMPONENT;
 
-  -- señales internas
-  SIGNAL clk : STD_LOGIC; -- señal de 0,01s = 100hz
+  -- señales internas:
+  SIGNAL clk_100 : STD_LOGIC; -- señal de 0,01s = 100hz
 
-  SIGNAL unit1, unit2, unit3, unit4  : STD_LOGIC_VECTOR(3 downto 0);
-  SIGNAL C1, C2, C3, C4  : STD_LOGIC;
-  
-  signal counterDiv: integer;
-  signal counter	: 	std_logic_vector(3 downto 0);
-  
+  -- numeros decimales que se muestran en los displays
+  SIGNAL decimalDisplay0 : STD_LOGIC_VECTOR(3 DOWNTO 0);
+  SIGNAL decimalDisplay1 : STD_LOGIC_VECTOR(3 DOWNTO 0);
+  SIGNAL decimalDisplay2 : STD_LOGIC_VECTOR(3 DOWNTO 0);
+  SIGNAL decimalDisplay3 : STD_LOGIC_VECTOR(3 DOWNTO 0);
+
+  -- carrys de la salida de los contadores de cada display (se dispara durante un 
+  -- ciclo de reloj cuando se llega a 9, si se quisiera un contador octal, el mismo
+  -- se podria disparar cuando llega a 7)
+  SIGNAL C1, C2, C3, C4 : STD_LOGIC;
+
 BEGIN
 
-  -- se cuenta la unidad
-  unitCounter1 : digitCounter PORT MAP(
-    clk => clk and unit4 = "1001" and unit3 = "1001" and unit2 = "1001" and unit1 = "1001",
-	 reset => SW(9),
-	 maxCount => C1,
-    numberOUT => unit1
+  -- reloj de 100Hz
+  clk100 : frequencyDivider PORT MAP(
+    CLOCK_IN => CLOCK_50,
+    RESET => SW(9),
+    CLOCK_OUT => clk_100
   );
-  
-  -- se cuenta la unidad
-  unitCounter2 : digitCounter PORT MAP(
+
+  -- - - - - - - - - - -  CONTADORES - - - - - - - - - - 
+  -- Se cuentan los 1/100 segundos
+  displayCounter0 : digitCounter PORT MAP(
+    clk => clk_100 AND decimalDisplay3 = "1001" AND decimalDisplay2 = "1001" AND decimalDisplay1 = "1001" AND decimalDisplay0 = "1001",
+    reset => SW(9),
+    maxCount => C1,
+    numberOUT => decimalDisplay0
+  );
+  -- Se cuentan los 1/10 segundos
+  displayCounter1 : digitCounter PORT MAP(
     clk => C1,
-	 	 reset => SW(9),
-	 maxCount => C2,
-    numberOUT => unit2
+    reset => SW(9),
+    maxCount => C2,
+    numberOUT => decimalDisplay1
   );
-  
-  -- se cuenta la unidad
-  unitCounter3 : digitCounter PORT MAP(
+  -- Se cuentan los segundos
+  displayCounter2 : digitCounter PORT MAP(
     clk => C2,
-	 	 reset => SW(9),
-	 maxCount => C3,
-    numberOUT => unit3
+    reset => SW(9),
+    maxCount => C3,
+    numberOUT => decimalDisplay2
   );
--- se cuenta la unidad
-  unitCounter4 : digitCounter PORT MAP(
+  -- Se cuentan las decenas de segundos
+  displayCounter3 : digitCounter PORT MAP(
     clk => C3,
-	 	 reset => SW(9),
-		 maxCount => C4,
-    numberOUT => unit4
+    reset => SW(9),
+    maxCount => C4,
+    numberOUT => decimalDisplay3
   );
-  -- primer display (muestra la unidad)
+
+  -- - - - - - - - - - -  DISPLAYS - - - - - - - - - - 
+  -- primer display (muestra la centésima de segundo)
+  HEX2_DP <= '0'; -- el punto decimal en el medio, siempre activo.
   d7s_0 : decoder7segments PORT MAP(
-    NUMBER => unit1,
+    NUMBER => decimalDisplay0,
     ENABLE => '1',
-    DECIMAL => '1',
     OUTPUT => HEX0_D
   );
-  -- primer display (muestra la unidad)
+  -- primer display (muestra la décima de segundo)
   d7s_1 : decoder7segments PORT MAP(
-    NUMBER => unit2,
+    NUMBER => decimalDisplay1,
     ENABLE => '1',
-    DECIMAL => '1',
     OUTPUT => HEX1_D
   );
-
-  -- primer display (muestra la unidad)
+  -- primer display (muestra la unidad de segundo)
   d7s_2 : decoder7segments PORT MAP(
-    NUMBER => unit3,
+    NUMBER => decimalDisplay2,
     ENABLE => '1',
-    DECIMAL => '1',
     OUTPUT => HEX2_D
   );
-
-  -- primer display (muestra la unidad)
+  -- primer display (muestra la decena de segundo)
   d7s_3 : decoder7segments PORT MAP(
-    NUMBER => unit4,
+    NUMBER => decimalDisplay3,
     ENABLE => '1',
-    DECIMAL => '1',
     OUTPUT => HEX3_D
   );
 
-
-  freqDivider :
-  PROCESS (CLOCK_50) IS
-  BEGIN
-
-    IF (rising_edge(CLOCK_50)) THEN
-      -- sincrono con el reloj de entrada (50MHz)
-      IF (SW(8) = '1') THEN
-        counterDiv <= 0;
-      ELSIF (counterDiv < 250000) THEN
-        counterDiv <= counterDiv + 1;
-      ELSE
-        counterDiv <= 0;
-        clk <= NOT(clk);
-      END IF;
-
-    END IF;
-
-  END PROCESS;
-  
-  
-  -- reloj de 100Hz
---  clk100 : frequencyDivider PORT MAP(
---    CLOCK_IN => CLOCK_50,
---    RESET => SW(9),
---    CLOCK_OUT => clk
---  );
-  
-  
-  LEDG(0) <= clk;
-  LEDG(8 downto 5) <= unit1;
-  LEDG(9) <= SW(9);
-  
-  HEX2_DP <= '0';
-  
+  -- - - - - - - - - - -  UTILIDADES DE DEBUG - - - - - - - - - - 
+  LEDG(0) <= clk_100; -- se muestra el reloj de 100hz, en el primer LED
+  LEDG(8) <= SW(0); -- muestra si se activa o no el switch de pausa (habilitado), en el anteúltimo LED.
+  LEDG(9) <= SW(9); -- muestra si se activa o no el switch de reset, en el último LED.
 
 END A1;
