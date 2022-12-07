@@ -4,6 +4,14 @@ USE IEEE.std_logic_arith.ALL;
 USE IEEE.numeric_std.ALL;
 USE IEEE.std_logic_signed.ALL;
 
+-- TODO: pensar como sincronizar todo con un solo reset,
+-- ahora se usa el SW(8) para sincronizar el reloj de 100Hz
+-- y el SW(9) para resetear los contadores
+-- TODO: haciendo test benches me di cuenta que los reset de los displays
+-- no estan bien hechos, porque deberian ser asincronos, ya que los carrys son 
+-- los relojes, por lo que nunca se resetean hasta que el contador llegue a 99 segundos,
+-- que no es aceptable.
+
 ENTITY counter IS
   PORT (
 
@@ -28,9 +36,9 @@ ENTITY counter IS
   );
 END ENTITY;
 
-ARCHITECTURE A1 OF counter IS
+ARCHITECTURE counter_arch OF counter IS
 
-  CONSTANT digitMaxCount : STD_LOGIC_VECTOR(3 DOWNTO 0) := "1001";
+  -- CONSTANT digitMaxCount : STD_LOGIC_VECTOR(3 DOWNTO 0) := "1001";
 
   -- Este componente se encarga de contar el digito de un display.
   COMPONENT digitCounter IS
@@ -66,18 +74,18 @@ ARCHITECTURE A1 OF counter IS
   END COMPONENT;
 
   -- señales internas:
-  SIGNAL clk_100 : STD_LOGIC; -- señal de 0,01s = 100hz
+  SIGNAL clk_100 : STD_LOGIC := '0'; -- señal de 0,01s = 100hz
 
   -- numeros decimales que se muestran en los displays
-  SIGNAL decimalDisplay0 : STD_LOGIC_VECTOR(3 DOWNTO 0);
-  SIGNAL decimalDisplay1 : STD_LOGIC_VECTOR(3 DOWNTO 0);
-  SIGNAL decimalDisplay2 : STD_LOGIC_VECTOR(3 DOWNTO 0);
-  SIGNAL decimalDisplay3 : STD_LOGIC_VECTOR(3 DOWNTO 0);
+  SIGNAL decimalDisplay0 : STD_LOGIC_VECTOR(3 DOWNTO 0) := "0000";
+  SIGNAL decimalDisplay1 : STD_LOGIC_VECTOR(3 DOWNTO 0) := "0000";
+  SIGNAL decimalDisplay2 : STD_LOGIC_VECTOR(3 DOWNTO 0) := "0000";
+  SIGNAL decimalDisplay3 : STD_LOGIC_VECTOR(3 DOWNTO 0) := "0000";
 
   -- carrys de la salida de los contadores de cada display (se dispara durante un 
   -- ciclo de reloj cuando se llega a 9, si se quisiera un contador octal, el mismo
   -- se podria disparar cuando llega a 7)
-  SIGNAL C1, C2, C3, C4 : STD_LOGIC;
+  SIGNAL C1, C2, C3, C4 : STD_LOGIC := '0';
 
 BEGIN
 
@@ -122,7 +130,7 @@ BEGIN
   -- primer display (muestra la centésima de segundo)
   HEX2_DP <= '0'; -- el punto decimal en el medio, siempre activo.
   d7s_0 : decoder7segments PORT MAP(
-    NUMBER => decimalDisplay0,
+    NUMBER => decimalDisplay0 and not(C4 = '1' and C3 = '1' and C2 = '1' and C1 = '1'),
     ENABLE => '1',
     OUTPUT => HEX0_D
   );
@@ -156,6 +164,5 @@ BEGIN
   D1_COUNT <= decimalDisplay1;
   D2_COUNT <= decimalDisplay2;
   D3_COUNT <= decimalDisplay3;
-
-
-END A1;
+  
+END counter_arch;
