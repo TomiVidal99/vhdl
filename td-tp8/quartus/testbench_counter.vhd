@@ -1,7 +1,11 @@
 LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
+USE ieee.numeric_std.ALL;
 
 ENTITY testbench_counter IS
+    PORT (
+        CLOCK50MHz : IN STD_LOGIC
+    );
 END ENTITY;
 
 ARCHITECTURE A1 OF testbench_counter IS
@@ -24,41 +28,23 @@ ARCHITECTURE A1 OF testbench_counter IS
         );
     END COMPONENT;
 
-    -- Procedure for clock generation
-    PROCEDURE clk_gen(SIGNAL clk : OUT STD_LOGIC; CONSTANT FREQ : real) IS
-        CONSTANT PERIOD : TIME := 1 sec / FREQ; -- Full period
-        CONSTANT HIGH_TIME : TIME := PERIOD / 2; -- High time
-        CONSTANT LOW_TIME : TIME := PERIOD - HIGH_TIME; -- Low time; always >= HIGH_TIME
-    BEGIN
-        -- Check the arguments
-        ASSERT (HIGH_TIME /= 0 fs) REPORT "clk_plain: High time is zero; time resolution to large for frequency" SEVERITY FAILURE;
-        -- Generate a clock cycle
-        LOOP
-            clk <= '1';
-            WAIT FOR HIGH_TIME;
-            clk <= '0';
-            WAIT FOR LOW_TIME;
-        END LOOP;
-    END PROCEDURE;
+    SIGNAL switches : STD_LOGIC_VECTOR(9 DOWNTO 0) := "0000000000";
+    SIGNAL display0 : STD_LOGIC_VECTOR(6 DOWNTO 0) := "0000000";
+    SIGNAL display1 : STD_LOGIC_VECTOR(6 DOWNTO 0) := "0000000";
+    SIGNAL display2 : STD_LOGIC_VECTOR(6 DOWNTO 0) := "0000000";
+    SIGNAL display3 : STD_LOGIC_VECTOR(6 DOWNTO 0) := "0000000";
 
-    SIGNAL clk50 : STD_LOGIC := '0';
-    SIGNAL switches : STD_LOGIC_VECTOR(9 DOWNTO 0);
-    SIGNAL display0 : STD_LOGIC_VECTOR(6 DOWNTO 0);
-    SIGNAL display1 : STD_LOGIC_VECTOR(6 DOWNTO 0);
-    SIGNAL display2 : STD_LOGIC_VECTOR(6 DOWNTO 0);
-    SIGNAL display3 : STD_LOGIC_VECTOR(6 DOWNTO 0);
-
-    SIGNAL clk100hz: STD_LOGIC;
-    SIGNAL d0: STD_LOGIC_VECTOR(3 downto 0);
-    SIGNAL d1: STD_LOGIC_VECTOR(3 downto 0);
-    SIGNAL d2: STD_LOGIC_VECTOR(3 downto 0);
-    SIGNAL d3: STD_LOGIC_VECTOR(3 downto 0);
+    SIGNAL clk100hz : STD_LOGIC := '0';
+    SIGNAL d0 : STD_LOGIC_VECTOR(3 DOWNTO 0) := "0000";
+    SIGNAL d1 : STD_LOGIC_VECTOR(3 DOWNTO 0) := "0000";
+    SIGNAL d2 : STD_LOGIC_VECTOR(3 DOWNTO 0) := "0000";
+    SIGNAL d3 : STD_LOGIC_VECTOR(3 DOWNTO 0) := "0000";
 
 BEGIN
 
     -- instanciación del cronómetro
-    counterInstance : counter PORT MAP(
-        CLOCK_50 => clk50,
+    uut : counter PORT MAP(
+        CLOCK_50 => CLOCK50MHz,
         SW => switches,
         HEX0_D => display0,
         HEX1_D => display1,
@@ -71,25 +57,15 @@ BEGIN
         D3_COUNT => d3
     );
 
-    clk_gen(clk50, 50.000E6); -- 50.000 MHz clock
-
-    ---- se crea el reloj de 50MHz
-    --clock50 :
-    --PROCESS IS
-    --BEGIN
-    --    clk50 <= NOT(clk50) AFTER 10 ns;
-    --    WAIT;
-    --END PROCESS;
-
     -- se cuenta por 100 segundos y se espera que el contador quede en 99.99
-    uut :
+    stimulus :
     PROCESS IS
     BEGIN
 
-        switches <= "1000000000"; -- se activa el reset
-        WAIT FOR 100 ms; -- se espera un pulso de reloj
-        switches <= "0000000000"; -- se desactiva el reset
-        WAIT FOR 100 ms; -- se espera un pulso de reloj
+        switches(9) <= '1'; -- se activa el reset
+        WAIT FOR 60 ns; -- se espera un pulso de reloj
+        switches(9) <= '0'; -- se desactiva el reset
+        WAIT FOR 20 ns; -- se espera un pulso de reloj
         ASSERT((display0 = "1111001"))
         REPORT "Se esperaba que el display 0 muestre un '1'" SEVERITY warning;
         WAIT;
