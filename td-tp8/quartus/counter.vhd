@@ -6,14 +6,25 @@ USE IEEE.std_logic_signed.ALL;
 
 ENTITY counter IS
   PORT (
+
+    -- Entradas (internas en la FPGA)
     CLOCK_50 : IN STD_LOGIC; -- reloj interno de la FPGA de 50Mhz
     SW : IN STD_LOGIC_VECTOR(9 DOWNTO 0); -- SW(0) switch de pausa
+
+    -- Salidas (internas en la FPGA)
     LEDG : OUT STD_LOGIC_VECTOR(9 DOWNTO 0); -- LEDs, se usan para debugear
     HEX0_D : OUT STD_LOGIC_VECTOR(6 DOWNTO 0); -- display 1
     HEX1_D : OUT STD_LOGIC_VECTOR(6 DOWNTO 0); -- display 2
     HEX2_D : OUT STD_LOGIC_VECTOR(6 DOWNTO 0); -- display 3
     HEX3_D : OUT STD_LOGIC_VECTOR(6 DOWNTO 0); -- display 4
-    HEX2_DP : OUT STD_LOGIC -- punto decimal del 3er display
+    HEX2_DP : OUT STD_LOGIC; -- punto decimal del 3er display
+
+    -- Salidas para los test bench
+    CLOCK_100Hz : OUT STD_LOGIC;
+    D0_COUNT : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
+    D1_COUNT : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
+    D2_COUNT : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
+    D3_COUNT : OUT STD_LOGIC_VECTOR(3 DOWNTO 0)
   );
 END ENTITY;
 
@@ -80,7 +91,7 @@ BEGIN
   -- - - - - - - - - - -  CONTADORES - - - - - - - - - - 
   -- Se cuentan los 1/100 segundos
   displayCounter0 : digitCounter PORT MAP(
-    clk => clk_100 AND decimalDisplay3 = "1001" AND decimalDisplay2 = "1001" AND decimalDisplay1 = "1001" AND decimalDisplay0 = "1001",
+    clk => clk_100,
     reset => SW(9),
     maxCount => C1,
     numberOUT => decimalDisplay0
@@ -138,5 +149,13 @@ BEGIN
   LEDG(0) <= clk_100; -- se muestra el reloj de 100hz, en el primer LED
   LEDG(8) <= SW(0); -- muestra si se activa o no el switch de pausa (habilitado), en el anteúltimo LED.
   LEDG(9) <= SW(9); -- muestra si se activa o no el switch de reset, en el último LED.
+
+  -- conecto las salidas para debugear con los test bench
+  CLOCK_100Hz <= clk_100;
+  D0_COUNT <= decimalDisplay0;
+  D1_COUNT <= decimalDisplay1;
+  D2_COUNT <= decimalDisplay2;
+  D3_COUNT <= decimalDisplay3;
+
 
 END A1;
