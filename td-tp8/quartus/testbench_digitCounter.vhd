@@ -52,8 +52,8 @@ BEGIN
 
     END PROCESS;
 
-    clockD0 <= CLOCK_100 AND NOT(C0 AND C1);
-    clockD1 <= (C0 and CLOCK_100);
+    clockD0 <= CLOCK_100 AND NOT(C0) AND NOT(C1);
+    clockD1 <= (C0 AND CLOCK_100);
 
     -- instanciación del cronómetro
     uut1 : digitCounter PORT MAP(
