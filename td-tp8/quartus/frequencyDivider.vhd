@@ -48,3 +48,23 @@ BEGIN
   CLOCK_OUT <= clk;
 
 END A1;
+
+-- codigo que habia antes en el main
+--  freqDivider :
+--  PROCESS (CLOCK_50) IS
+--  BEGIN
+--
+--    IF (rising_edge(CLOCK_50)) THEN
+--      -- sincrono con el reloj de entrada (50MHz)
+--      IF (SW(8) = '1') THEN
+--        counterDiv <= 0;
+--      ELSIF (counterDiv < 250000) THEN
+--        counterDiv <= counterDiv + 1;
+--      ELSE
+--        counterDiv <= 0;
+--        clk <= NOT(clk);
+--      END IF;
+--
+--    END IF;
+--
+--  END PROCESS;
