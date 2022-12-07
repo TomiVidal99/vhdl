@@ -49,9 +49,9 @@ BEGIN
     PROCESS IS
     BEGIN
 
-        switches(8) <= '1'; -- se activa el reset del reloj de 100Hz
+        switches(9) <= '1'; -- se activa el reset del reloj de 100Hz
         WAIT FOR 20 ns; -- se espera un pulso de reloj del de 50MHz
-        switches(8) <= '0'; -- se desactiva el reset del reloj de 100Hz
+        switches(9) <= '0'; -- se desactiva el reset del reloj de 100Hz
         switches(9) <= '1'; -- se activa el reset de los contadores por un cliclo de reloj del de 100Hz
         WAIT FOR 10 ms; -- se espera un pulso de reloj del de 100Hz
         switches(9) <= '0'; -- se desactiva el reset asi los contadores comienzan a contar

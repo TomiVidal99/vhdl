@@ -7,14 +7,11 @@ USE IEEE.numeric_std.ALL;
 -- cuando se llega al limite 'MAX_COUNT'
 
 ENTITY digitCounter IS
-    GENERIC (
-        MAX_COUNT : STD_LOGIC_VECTOR(3 DOWNTO 0) := (OTHERS => '0')
-    );
     PORT (
         clk : IN STD_LOGIC;
         reset : IN STD_LOGIC;
         maxCount : OUT STD_LOGIC;
-        numberOUT : OUT STD_LOGIC_VECTOR(3 DOWNTO 0)
+        numberOut : OUT STD_LOGIC_VECTOR(3 DOWNTO 0)
     );
 END ENTITY;
 
@@ -31,23 +28,25 @@ BEGIN
             count <= (OTHERS => '0');
             hitMax <= '0';
 
-        ELSIF (rising_edge(clk)) THEN
             -- sincrono con el reloj
-            count <= count + '1'; -- se suma uno a la cuenta actual
+        ELSIF (rising_edge(clk)) THEN
+            IF (count = 9) THEN
+                count <= (OTHERS => '0'); -- se reinicia el conteo
+            ELSE
+                count <= count + '1'; -- se suma uno a la cuenta actual
+            END IF;
 
-            -- señal que indica si se llego al maximo numero de la cuenta
+        ELSIF (falling_edge(clk)) THEN
             IF (count = 9) THEN
                 hitMax <= '1';
-                count <= (OTHERS => '0'); -- se reinicia el conteo
             ELSE
                 hitMax <= '0';
             END IF;
-
         END IF;
 
     END PROCESS;
 
     maxCount <= hitMax;
-    numberOUT <= count;
+    numberOut <= count;
 
 END A1;

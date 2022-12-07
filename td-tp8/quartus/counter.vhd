@@ -32,7 +32,12 @@ ENTITY counter IS
     D0_COUNT : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
     D1_COUNT : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
     D2_COUNT : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
-    D3_COUNT : OUT STD_LOGIC_VECTOR(3 DOWNTO 0)
+    D3_COUNT : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
+    C0_COUNT : OUT STD_LOGIC;
+    C1_COUNT : OUT STD_LOGIC;
+    C2_COUNT : OUT STD_LOGIC;
+    C3_COUNT : OUT STD_LOGIC
+
   );
 END ENTITY;
 
@@ -42,14 +47,11 @@ ARCHITECTURE counter_arch OF counter IS
 
   -- Este componente se encarga de contar el digito de un display.
   COMPONENT digitCounter IS
-    GENERIC (
-      MAX_COUNT : STD_LOGIC_VECTOR(3 DOWNTO 0) := "1001"
-    );
     PORT (
       clk : IN STD_LOGIC;
       reset : IN STD_LOGIC;
       maxCount : OUT STD_LOGIC;
-      numberOUT : OUT STD_LOGIC_VECTOR(3 DOWNTO 0)
+      numberOut : OUT STD_LOGIC_VECTOR(3 DOWNTO 0)
     );
   END COMPONENT;
 
@@ -85,7 +87,12 @@ ARCHITECTURE counter_arch OF counter IS
   -- carrys de la salida de los contadores de cada display (se dispara durante un 
   -- ciclo de reloj cuando se llega a 9, si se quisiera un contador octal, el mismo
   -- se podria disparar cuando llega a 7)
-  SIGNAL C1, C2, C3, C4 : STD_LOGIC := '0';
+  SIGNAL C0 : STD_LOGIC := '0';
+  SIGNAL C1 : STD_LOGIC := '0';
+  SIGNAL C2 : STD_LOGIC := '0';
+  SIGNAL C3 : STD_LOGIC := '0';
+
+  SIGNAL clockFirstCounter : STD_LOGIC := '0';
 
 BEGIN
 
@@ -97,40 +104,41 @@ BEGIN
   );
 
   -- - - - - - - - - - -  CONTADORES - - - - - - - - - - 
+  clockFirstCounter <= clk_100 AND NOT(C3 AND C2 AND C1 AND C0); -- esto es para que pare cuando llega al maximo
   -- Se cuentan los 1/100 segundos
   displayCounter0 : digitCounter PORT MAP(
-    clk => clk_100,
+    clk => clockFirstCounter,
     reset => SW(9),
-    maxCount => C1,
-    numberOUT => decimalDisplay0
+    maxCount => C0,
+    numberOut => decimalDisplay0
   );
   -- Se cuentan los 1/10 segundos
   displayCounter1 : digitCounter PORT MAP(
-    clk => C1,
+    clk => C0,
     reset => SW(9),
-    maxCount => C2,
-    numberOUT => decimalDisplay1
+    maxCount => C1,
+    numberOut => decimalDisplay1
   );
   -- Se cuentan los segundos
   displayCounter2 : digitCounter PORT MAP(
-    clk => C2,
+    clk => C1,
     reset => SW(9),
-    maxCount => C3,
-    numberOUT => decimalDisplay2
+    maxCount => C2,
+    numberOut => decimalDisplay2
   );
   -- Se cuentan las decenas de segundos
   displayCounter3 : digitCounter PORT MAP(
-    clk => C3,
+    clk => C2,
     reset => SW(9),
-    maxCount => C4,
-    numberOUT => decimalDisplay3
+    maxCount => C3,
+    numberOut => decimalDisplay3
   );
 
   -- - - - - - - - - - -  DISPLAYS - - - - - - - - - - 
   -- primer display (muestra la centésima de segundo)
   HEX2_DP <= '0'; -- el punto decimal en el medio, siempre activo.
   d7s_0 : decoder7segments PORT MAP(
-    NUMBER => decimalDisplay0 and not(C4 = '1' and C3 = '1' and C2 = '1' and C1 = '1'),
+    NUMBER => decimalDisplay0,
     ENABLE => '1',
     OUTPUT => HEX0_D
   );
@@ -164,5 +172,9 @@ BEGIN
   D1_COUNT <= decimalDisplay1;
   D2_COUNT <= decimalDisplay2;
   D3_COUNT <= decimalDisplay3;
-  
+  C0_COUNT <= C0;
+  C1_COUNT <= C1;
+  C2_COUNT <= C2;
+  C3_COUNT <= C3;
+
 END counter_arch;
