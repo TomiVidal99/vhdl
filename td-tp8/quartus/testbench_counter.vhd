@@ -3,12 +3,9 @@ USE IEEE.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
 
 ENTITY testbench_counter IS
-    PORT (
-        CLOCK50MHz : IN STD_LOGIC
-    );
 END ENTITY;
 
-ARCHITECTURE A1 OF testbench_counter IS
+ARCHITECTURE counter_arch OF testbench_counter IS
     COMPONENT counter
         PORT (
             CLOCK_50 : IN STD_LOGIC; -- reloj interno de la FPGA de 50Mhz
@@ -40,7 +37,34 @@ ARCHITECTURE A1 OF testbench_counter IS
     SIGNAL d2 : STD_LOGIC_VECTOR(3 DOWNTO 0) := "0000";
     SIGNAL d3 : STD_LOGIC_VECTOR(3 DOWNTO 0) := "0000";
 
+    SIGNAL CLOCK50MHz : STD_LOGIC := '0';
+
 BEGIN
+
+    -- reloj de 50MHz
+    CLOCK50MHz <= NOT(CLOCK50MHz) AFTER 10 ns;
+
+    -- se cuenta por 100 segundos y se espera que el contador quede en 99.99
+    stimulus :
+    PROCESS IS
+    BEGIN
+
+        switches(9) <= '1'; -- se activa el reset del reloj de 100Hz
+        WAIT FOR 20 ns; -- se espera un pulso de reloj del de 50MHz
+        switches(9) <= '0'; -- se desactiva el reset del reloj de 100Hz
+        switches(9) <= '1'; -- se activa el reset de los contadores por un cliclo de reloj del de 100Hz
+        WAIT FOR 10 ms; -- se espera un pulso de reloj del de 100Hz
+        switches(9) <= '0'; -- se desactiva el reset asi los contadores comienzan a contar
+        WAIT FOR 10 ms; -- se espera un pulso de reloj del de 100Hz
+        ASSERT((display0 = "1111001"))
+        REPORT "Se esperaba que el display 0 muestre un '1'" SEVERITY error;
+
+        WAIT FOR 99 sec;
+        ASSERT((display2 = "0011000") and (display3 = "0011000"))
+        REPORT "Se esperaba que los displays 2 y 3 muestren un '9'" SEVERITY error;
+        WAIT;
+
+    END PROCESS;
 
     -- instanciación del cronómetro
     uut : counter PORT MAP(
@@ -57,19 +81,4 @@ BEGIN
         D3_COUNT => d3
     );
 
-    -- se cuenta por 100 segundos y se espera que el contador quede en 99.99
-    stimulus :
-    PROCESS IS
-    BEGIN
-
-        switches(9) <= '1'; -- se activa el reset
-        WAIT FOR 60 ns; -- se espera un pulso de reloj
-        switches(9) <= '0'; -- se desactiva el reset
-        WAIT FOR 20 ns; -- se espera un pulso de reloj
-        ASSERT((display0 = "1111001"))
-        REPORT "Se esperaba que el display 0 muestre un '1'" SEVERITY warning;
-        WAIT;
-
-    END PROCESS;
-
-END A1;
+END counter_arch;

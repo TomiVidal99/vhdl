@@ -19,10 +19,10 @@ ENTITY frequencyDivider IS
   );
 END ENTITY;
 
-ARCHITECTURE A1 OF frequencyDivider IS
+ARCHITECTURE freqDivider_arch OF frequencyDivider IS
 
-  SIGNAL clk : STD_LOGIC;
-  SIGNAL counter : INTEGER;
+  SIGNAL clk : STD_LOGIC := '0';
+  SIGNAL counter : INTEGER := 0;
 
 BEGIN
 
@@ -47,7 +47,7 @@ BEGIN
 
   CLOCK_OUT <= clk;
 
-END A1;
+END freqDivider_arch;
 
 -- codigo que habia antes en el main
 --  freqDivider :

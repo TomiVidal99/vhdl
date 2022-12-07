@@ -4,6 +4,14 @@ USE IEEE.std_logic_arith.ALL;
 USE IEEE.numeric_std.ALL;
 USE IEEE.std_logic_signed.ALL;
 
+-- TODO: pensar como sincronizar todo con un solo reset,
+-- ahora se usa el SW(8) para sincronizar el reloj de 100Hz
+-- y el SW(9) para resetear los contadores
+-- TODO: haciendo test benches me di cuenta que los reset de los displays
+-- no estan bien hechos, porque deberian ser asincronos, ya que los carrys son 
+-- los relojes, por lo que nunca se resetean hasta que el contador llegue a 99 segundos,
+-- que no es aceptable.
+
 ENTITY counter IS
   PORT (
 
@@ -24,24 +32,26 @@ ENTITY counter IS
     D0_COUNT : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
     D1_COUNT : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
     D2_COUNT : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
-    D3_COUNT : OUT STD_LOGIC_VECTOR(3 DOWNTO 0)
+    D3_COUNT : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
+    C0_COUNT : OUT STD_LOGIC;
+    C1_COUNT : OUT STD_LOGIC;
+    C2_COUNT : OUT STD_LOGIC;
+    C3_COUNT : OUT STD_LOGIC
+
   );
 END ENTITY;
 
-ARCHITECTURE A1 OF counter IS
+ARCHITECTURE counter_arch OF counter IS
 
-  CONSTANT digitMaxCount : STD_LOGIC_VECTOR(3 DOWNTO 0) := "1001";
+  -- CONSTANT digitMaxCount : STD_LOGIC_VECTOR(3 DOWNTO 0) := "1001";
 
   -- Este componente se encarga de contar el digito de un display.
   COMPONENT digitCounter IS
-    GENERIC (
-      MAX_COUNT : STD_LOGIC_VECTOR(3 DOWNTO 0) := "1001"
-    );
     PORT (
       clk : IN STD_LOGIC;
       reset : IN STD_LOGIC;
       maxCount : OUT STD_LOGIC;
-      numberOUT : OUT STD_LOGIC_VECTOR(3 DOWNTO 0)
+      numberOut : OUT STD_LOGIC_VECTOR(3 DOWNTO 0)
     );
   END COMPONENT;
 
@@ -66,18 +76,23 @@ ARCHITECTURE A1 OF counter IS
   END COMPONENT;
 
   -- señales internas:
-  SIGNAL clk_100 : STD_LOGIC; -- señal de 0,01s = 100hz
+  SIGNAL clk_100 : STD_LOGIC := '0'; -- señal de 0,01s = 100hz
 
   -- numeros decimales que se muestran en los displays
-  SIGNAL decimalDisplay0 : STD_LOGIC_VECTOR(3 DOWNTO 0);
-  SIGNAL decimalDisplay1 : STD_LOGIC_VECTOR(3 DOWNTO 0);
-  SIGNAL decimalDisplay2 : STD_LOGIC_VECTOR(3 DOWNTO 0);
-  SIGNAL decimalDisplay3 : STD_LOGIC_VECTOR(3 DOWNTO 0);
+  SIGNAL decimalDisplay0 : STD_LOGIC_VECTOR(3 DOWNTO 0) := "0000";
+  SIGNAL decimalDisplay1 : STD_LOGIC_VECTOR(3 DOWNTO 0) := "0000";
+  SIGNAL decimalDisplay2 : STD_LOGIC_VECTOR(3 DOWNTO 0) := "0000";
+  SIGNAL decimalDisplay3 : STD_LOGIC_VECTOR(3 DOWNTO 0) := "0000";
 
   -- carrys de la salida de los contadores de cada display (se dispara durante un 
   -- ciclo de reloj cuando se llega a 9, si se quisiera un contador octal, el mismo
   -- se podria disparar cuando llega a 7)
-  SIGNAL C1, C2, C3, C4 : STD_LOGIC;
+  SIGNAL C0 : STD_LOGIC := '0';
+  SIGNAL C1 : STD_LOGIC := '0';
+  SIGNAL C2 : STD_LOGIC := '0';
+  SIGNAL C3 : STD_LOGIC := '0';
+
+  SIGNAL clockFirstCounter : STD_LOGIC := '0';
 
 BEGIN
 
@@ -89,33 +104,34 @@ BEGIN
   );
 
   -- - - - - - - - - - -  CONTADORES - - - - - - - - - - 
+  clockFirstCounter <= clk_100 AND NOT(C3 AND C2 AND C1 AND C0); -- esto es para que pare cuando llega al maximo
   -- Se cuentan los 1/100 segundos
   displayCounter0 : digitCounter PORT MAP(
-    clk => clk_100,
+    clk => clockFirstCounter,
     reset => SW(9),
-    maxCount => C1,
-    numberOUT => decimalDisplay0
+    maxCount => C0,
+    numberOut => decimalDisplay0
   );
   -- Se cuentan los 1/10 segundos
   displayCounter1 : digitCounter PORT MAP(
-    clk => C1,
+    clk => C0,
     reset => SW(9),
-    maxCount => C2,
-    numberOUT => decimalDisplay1
+    maxCount => C1,
+    numberOut => decimalDisplay1
   );
   -- Se cuentan los segundos
   displayCounter2 : digitCounter PORT MAP(
-    clk => C2,
+    clk => C1,
     reset => SW(9),
-    maxCount => C3,
-    numberOUT => decimalDisplay2
+    maxCount => C2,
+    numberOut => decimalDisplay2
   );
   -- Se cuentan las decenas de segundos
   displayCounter3 : digitCounter PORT MAP(
-    clk => C3,
+    clk => C2,
     reset => SW(9),
-    maxCount => C4,
-    numberOUT => decimalDisplay3
+    maxCount => C3,
+    numberOut => decimalDisplay3
   );
 
   -- - - - - - - - - - -  DISPLAYS - - - - - - - - - - 
@@ -156,6 +172,9 @@ BEGIN
   D1_COUNT <= decimalDisplay1;
   D2_COUNT <= decimalDisplay2;
   D3_COUNT <= decimalDisplay3;
+  C0_COUNT <= C0;
+  C1_COUNT <= C1;
+  C2_COUNT <= C2;
+  C3_COUNT <= C3;
 
-
-END A1;
+END counter_arch;

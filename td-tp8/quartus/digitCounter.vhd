@@ -7,46 +7,46 @@ USE IEEE.numeric_std.ALL;
 -- cuando se llega al limite 'MAX_COUNT'
 
 ENTITY digitCounter IS
-    GENERIC (
-        MAX_COUNT : STD_LOGIC_VECTOR(3 DOWNTO 0) := (OTHERS => '0')
-    );
     PORT (
         clk : IN STD_LOGIC;
-		  reset : IN std_LOGIC;
-		  maxCount : OUT STD_LOGIC;
-        numberOUT : OUT STD_LOGIC_VECTOR(3 DOWNTO 0)
+        reset : IN STD_LOGIC;
+        maxCount : OUT STD_LOGIC;
+        numberOut : OUT STD_LOGIC_VECTOR(3 DOWNTO 0)
     );
 END ENTITY;
 
 ARCHITECTURE A1 OF digitCounter IS
     SIGNAL count : STD_LOGIC_VECTOR(3 DOWNTO 0);
-	 SIGNAL hitMax : STD_LOGIC;
+    SIGNAL hitMax : STD_LOGIC;
 BEGIN
     mainProcess :
     PROCESS (clk) IS
     BEGIN
 
-        IF (rising_edge(clk)) THEN
-            -- sincrono con el reloj
+        IF (reset = '1') THEN
+            -- reset asincrono
+            count <= (OTHERS => '0');
+            hitMax <= '0';
 
-				IF (reset = '1') THEN
-					count <= (OTHERS => '0');
-					hitMax <= '0';
-            ELSIF (count = 9) THEN
-                --count <= count + '1';
-					 hitMax <= '1';
-					 count <= (OTHERS => '0');
+            -- sincrono con el reloj
+        ELSIF (rising_edge(clk)) THEN
+            IF (count = 9) THEN
+                count <= (OTHERS => '0'); -- se reinicia el conteo
             ELSE
-                --count <= (OTHERS => '0');
-					 hitMax <= '0';
-					 count <= count + '1';
+                count <= count + '1'; -- se suma uno a la cuenta actual
             END IF;
 
+        ELSIF (falling_edge(clk)) THEN
+            IF (count = 9) THEN
+                hitMax <= '1';
+            ELSE
+                hitMax <= '0';
+            END IF;
         END IF;
 
     END PROCESS;
-	 
-	 maxCount <= hitMax;
-    numberOUT <= count;
+
+    maxCount <= hitMax;
+    numberOut <= count;
 
 END A1;
