@@ -53,15 +53,10 @@ BEGIN
         WAIT FOR 20 ns; -- se espera un pulso de reloj del de 50MHz
         switches(9) <= '0'; -- se desactiva el reset del reloj de 100Hz
         switches(9) <= '1'; -- se activa el reset de los contadores por un cliclo de reloj del de 100Hz
-        WAIT FOR 10 ms; -- se espera un pulso de reloj del de 100Hz
+        WAIT FOR 20 ns; -- se espera un pulso de reloj del de 100Hz
         switches(9) <= '0'; -- se desactiva el reset asi los contadores comienzan a contar
-        WAIT FOR 10 ms; -- se espera un pulso de reloj del de 100Hz
-        ASSERT((display0 = "1111001"))
-        REPORT "Se esperaba que el display 0 muestre un '1'" SEVERITY error;
+        WAIT FOR 20 ps; -- se espera un pulso de reloj del de 100Hz
 
-        WAIT FOR 99 sec;
-        ASSERT((display2 = "0011000") and (display3 = "0011000"))
-        REPORT "Se esperaba que los displays 2 y 3 muestren un '9'" SEVERITY error;
         WAIT;
 
     END PROCESS;
