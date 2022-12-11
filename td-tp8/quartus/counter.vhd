@@ -49,6 +49,7 @@ ARCHITECTURE counter_arch OF counter IS
   COMPONENT digitCounter IS
     PORT (
       clk : IN STD_LOGIC;
+      enabled : IN STD_LOGIC;
       reset : IN STD_LOGIC;
       maxCount : OUT STD_LOGIC;
       numberOut : OUT STD_LOGIC_VECTOR(3 DOWNTO 0)
@@ -92,7 +93,8 @@ ARCHITECTURE counter_arch OF counter IS
   SIGNAL C2 : STD_LOGIC := '0';
   SIGNAL C3 : STD_LOGIC := '0';
 
-  SIGNAL clockFirstCounter : STD_LOGIC := '0';
+  -- controla si la cuenta acabo o sigue contando
+  SIGNAL countersEnabled : STD_LOGIC := '0';
 
 BEGIN
 
@@ -101,13 +103,20 @@ BEGIN
     CLOCK_IN => CLOCK_50,
     RESET => SW(9),
     CLOCK_OUT => clk_100
+
   );
 
   -- - - - - - - - - - -  CONTADORES - - - - - - - - - - 
-  clockFirstCounter <= clk_100 AND NOT(C3 AND C2 AND C1 AND C0); -- esto es para que pare cuando llega al maximo
+  -- controlo cuando termina la cuenta
+  countersEnabled <= '0'
+    WHEN (decimalDisplay0 = "1001" AND decimalDisplay1 = "1001" AND decimalDisplay2 = "1001" AND decimalDisplay3 = "1001")
+    ELSE
+    '1';
+
   -- Se cuentan los 1/100 segundos
   displayCounter0 : digitCounter PORT MAP(
-    clk => clockFirstCounter,
+    clk => clk_100,
+    enabled => countersEnabled,
     reset => SW(9),
     maxCount => C0,
     numberOut => decimalDisplay0
@@ -115,6 +124,7 @@ BEGIN
   -- Se cuentan los 1/10 segundos
   displayCounter1 : digitCounter PORT MAP(
     clk => C0,
+    enabled => countersEnabled,
     reset => SW(9),
     maxCount => C1,
     numberOut => decimalDisplay1
@@ -122,6 +132,7 @@ BEGIN
   -- Se cuentan los segundos
   displayCounter2 : digitCounter PORT MAP(
     clk => C1,
+    enabled => countersEnabled,
     reset => SW(9),
     maxCount => C2,
     numberOut => decimalDisplay2
@@ -129,6 +140,7 @@ BEGIN
   -- Se cuentan las decenas de segundos
   displayCounter3 : digitCounter PORT MAP(
     clk => C2,
+    enabled => countersEnabled,
     reset => SW(9),
     maxCount => C3,
     numberOut => decimalDisplay3

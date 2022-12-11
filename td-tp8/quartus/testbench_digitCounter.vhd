@@ -9,6 +9,7 @@ ARCHITECTURE A1 OF testbench_digitCounter IS
     COMPONENT digitCounter
         PORT (
             clk : IN STD_LOGIC;
+            enabled : IN STD_LOGIC;
             reset : IN STD_LOGIC;
             maxCount : OUT STD_LOGIC;
             numberOUT : OUT STD_LOGIC_VECTOR(3 DOWNTO 0)
@@ -17,18 +18,35 @@ ARCHITECTURE A1 OF testbench_digitCounter IS
 
     SIGNAL CLOCK_100 : STD_LOGIC := '0';
     SIGNAL RESET : STD_LOGIC := '0';
+    SIGNAL ENABLED : STD_LOGIC := '0';
     SIGNAL C0 : STD_LOGIC := '0';
     SIGNAL C1 : STD_LOGIC := '0';
     SIGNAL D0 : STD_LOGIC_VECTOR(3 DOWNTO 0) := "0000";
     SIGNAL D1 : STD_LOGIC_VECTOR(3 DOWNTO 0) := "0000";
-
-    SIGNAL clockD0 : STD_LOGIC := '0';
-    SIGNAL clockD1 : STD_LOGIC := '0';
-
 BEGIN
 
     -- reloj de 100Hz
     CLOCK_100 <= NOT(CLOCK_100) AFTER 5 ms;
+
+    -- instanciación del cronómetro
+    uut1 : digitCounter PORT MAP(
+        clk => CLOCK_100,
+        enabled => ENABLED,
+        reset => RESET,
+        maxCount => C0,
+        numberOUT => D0
+    );
+    uut2 : digitCounter PORT MAP(
+        clk => C0,
+        enabled => ENABLED,
+        reset => RESET,
+        maxCount => C1,
+        numberOUT => D1
+    );
+
+    -- controlo cuando termina la cuenta
+    ENABLED <= '0' WHEN (D0 = "1001" AND D1 = "1001") ELSE
+        '1';
 
     -- se cuenta por 100 segundos y se espera que el contador quede en 99.99
     stimulus :
@@ -51,22 +69,5 @@ BEGIN
         WAIT;
 
     END PROCESS;
-
-    clockD0 <= CLOCK_100 AND NOT(C0) AND NOT(C1);
-    clockD1 <= (C0 AND CLOCK_100);
-
-    -- instanciación del cronómetro
-    uut1 : digitCounter PORT MAP(
-        clk => clockD0,
-        reset => RESET,
-        maxCount => C0,
-        numberOUT => D0
-    );
-    uut2 : digitCounter PORT MAP(
-        clk => clockD1,
-        reset => RESET,
-        maxCount => C1,
-        numberOUT => D1
-    );
 
 END A1;
